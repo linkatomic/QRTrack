@@ -38,7 +38,15 @@ export function QRCodeDisplay({ qrCode }: QRCodeDisplayProps) {
       const dataUrl = await generateQRCode({
         url: redirectUrl,
         color: qrCode.qr_color,
-        size: 512,
+        bgColor: qrCode.qr_bg_color || '#FFFFFF',
+        size: qrCode.qr_size || 512,
+        margin: qrCode.qr_margin || 2,
+        errorCorrectionLevel: (qrCode.qr_error_correction as 'L' | 'M' | 'Q' | 'H') || 'M',
+        style: (qrCode.qr_style as any) || 'square',
+        eyeStyle: (qrCode.qr_eye_style as any) || 'square',
+        gradientType: (qrCode.qr_gradient_type as any) || 'none',
+        gradientColor: qrCode.qr_gradient_color || undefined,
+        logoUrl: qrCode.qr_logo_url || undefined,
       });
       setQrDataUrl(dataUrl);
     } catch (error) {

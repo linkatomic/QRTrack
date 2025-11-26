@@ -51,6 +51,15 @@ export interface Database {
           utm_term: string | null
           utm_content: string | null
           qr_color: string
+          qr_style: string | null
+          qr_eye_style: string | null
+          qr_bg_color: string | null
+          qr_gradient_type: string | null
+          qr_gradient_color: string | null
+          qr_logo_url: string | null
+          qr_size: number | null
+          qr_error_correction: string | null
+          qr_margin: number | null
           landing_page_enabled: boolean
           landing_page_title: string | null
           landing_page_description: string | null
@@ -74,6 +83,15 @@ export interface Database {
           utm_term?: string | null
           utm_content?: string | null
           qr_color?: string
+          qr_style?: string | null
+          qr_eye_style?: string | null
+          qr_bg_color?: string | null
+          qr_gradient_type?: string | null
+          qr_gradient_color?: string | null
+          qr_logo_url?: string | null
+          qr_size?: number | null
+          qr_error_correction?: string | null
+          qr_margin?: number | null
           landing_page_enabled?: boolean
           landing_page_title?: string | null
           landing_page_description?: string | null
@@ -97,6 +115,15 @@ export interface Database {
           utm_term?: string | null
           utm_content?: string | null
           qr_color?: string
+          qr_style?: string | null
+          qr_eye_style?: string | null
+          qr_bg_color?: string | null
+          qr_gradient_type?: string | null
+          qr_gradient_color?: string | null
+          qr_logo_url?: string | null
+          qr_size?: number | null
+          qr_error_correction?: string | null
+          qr_margin?: number | null
           landing_page_enabled?: boolean
           landing_page_title?: string | null
           landing_page_description?: string | null

@@ -12,7 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Palette, Eye, Layers, Image as ImageIcon, Settings2 } from 'lucide-react';
 import { validateURL, buildURLWithUTM } from '@/lib/utils/url-builder';
 import { nanoid } from 'nanoid';
 
@@ -29,6 +31,15 @@ export function CreateQRForm() {
   const [name, setName] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
   const [qrColor, setQrColor] = useState('#000000');
+  const [qrStyle, setQrStyle] = useState('square');
+  const [qrEyeStyle, setQrEyeStyle] = useState('square');
+  const [qrBgColor, setQrBgColor] = useState('#FFFFFF');
+  const [qrGradientType, setQrGradientType] = useState('none');
+  const [qrGradientColor, setQrGradientColor] = useState('#0000FF');
+  const [qrLogoUrl, setQrLogoUrl] = useState('');
+  const [qrSize, setQrSize] = useState('512');
+  const [qrErrorCorrection, setQrErrorCorrection] = useState('M');
+  const [qrMargin, setQrMargin] = useState('2');
 
   const [utmSource, setUtmSource] = useState('');
   const [utmMedium, setUtmMedium] = useState('');
@@ -101,6 +112,15 @@ export function CreateQRForm() {
           utm_term: utmTerm || null,
           utm_content: utmContent || null,
           qr_color: qrColor,
+          qr_style: qrStyle,
+          qr_eye_style: qrEyeStyle,
+          qr_bg_color: qrBgColor,
+          qr_gradient_type: qrGradientType,
+          qr_gradient_color: qrGradientType !== 'none' ? qrGradientColor : null,
+          qr_logo_url: qrLogoUrl || null,
+          qr_size: parseInt(qrSize),
+          qr_error_correction: qrErrorCorrection,
+          qr_margin: parseInt(qrMargin),
           landing_page_enabled: landingPageEnabled,
           landing_page_title: landingPageTitle || null,
           landing_page_description: landingPageDescription || null,
@@ -161,19 +181,192 @@ export function CreateQRForm() {
             <p className="text-xs text-slate-500">Where users will be redirected</p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="qrColor">QR Code Color</Label>
-            <div className="flex gap-2 items-center">
-              <Input
-                id="qrColor"
-                type="color"
-                value={qrColor}
-                onChange={(e) => setQrColor(e.target.value)}
-                className="w-20 h-10"
-              />
-              <span className="text-sm text-slate-600">{qrColor}</span>
-            </div>
-          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            QR Code Design
+          </CardTitle>
+          <CardDescription>Customize the appearance of your QR code</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="style" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="style" className="text-xs">Style</TabsTrigger>
+              <TabsTrigger value="colors" className="text-xs">Colors</TabsTrigger>
+              <TabsTrigger value="logo" className="text-xs">Logo</TabsTrigger>
+              <TabsTrigger value="advanced" className="text-xs">Advanced</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="style" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>QR Code Pattern Style</Label>
+                <Select value={qrStyle} onValueChange={setQrStyle}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="square">Square (Classic)</SelectItem>
+                    <SelectItem value="dots">Dots (Modern)</SelectItem>
+                    <SelectItem value="rounded">Rounded (Smooth)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500">Shape of the QR code data modules</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Corner Eye Style</Label>
+                <Select value={qrEyeStyle} onValueChange={setQrEyeStyle}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="square">Square</SelectItem>
+                    <SelectItem value="dots">Dots</SelectItem>
+                    <SelectItem value="rounded">Rounded</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500">Style of the three corner patterns</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="colors" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="qrColor">Foreground Color</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    id="qrColor"
+                    type="color"
+                    value={qrColor}
+                    onChange={(e) => setQrColor(e.target.value)}
+                    className="w-20 h-10"
+                  />
+                  <span className="text-sm font-mono text-slate-600">{qrColor}</span>
+                </div>
+                <p className="text-xs text-slate-500">Primary color of QR code</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="qrBgColor">Background Color</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    id="qrBgColor"
+                    type="color"
+                    value={qrBgColor}
+                    onChange={(e) => setQrBgColor(e.target.value)}
+                    className="w-20 h-10"
+                  />
+                  <span className="text-sm font-mono text-slate-600">{qrBgColor}</span>
+                </div>
+                <p className="text-xs text-slate-500">Background color (keep light for best scanning)</p>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label>Gradient Effect</Label>
+                <Select value={qrGradientType} onValueChange={setQrGradientType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Gradient</SelectItem>
+                    <SelectItem value="linear">Linear Gradient</SelectItem>
+                    <SelectItem value="radial">Radial Gradient</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500">Add gradient effect to QR code</p>
+              </div>
+
+              {qrGradientType !== 'none' && (
+                <div className="space-y-2">
+                  <Label htmlFor="qrGradientColor">Gradient Second Color</Label>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      id="qrGradientColor"
+                      type="color"
+                      value={qrGradientColor}
+                      onChange={(e) => setQrGradientColor(e.target.value)}
+                      className="w-20 h-10"
+                    />
+                    <span className="text-sm font-mono text-slate-600">{qrGradientColor}</span>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="logo" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="qrLogoUrl">Logo URL (Optional)</Label>
+                <Input
+                  id="qrLogoUrl"
+                  type="url"
+                  placeholder="https://example.com/logo.png"
+                  value={qrLogoUrl}
+                  onChange={(e) => setQrLogoUrl(e.target.value)}
+                />
+                <p className="text-xs text-slate-500">Add your logo to the center of QR code</p>
+              </div>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-900">
+                  <strong>Pro Tip:</strong> Use a square logo with transparent background for best results. The logo will cover ~20% of the QR code center.
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="advanced" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>QR Code Size</Label>
+                <Select value={qrSize} onValueChange={setQrSize}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="256">256x256 (Small)</SelectItem>
+                    <SelectItem value="512">512x512 (Standard)</SelectItem>
+                    <SelectItem value="1024">1024x1024 (Large)</SelectItem>
+                    <SelectItem value="2048">2048x2048 (Print Quality)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500">Resolution for generated QR code</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Error Correction Level</Label>
+                <Select value={qrErrorCorrection} onValueChange={setQrErrorCorrection}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="L">Low (7%) - Smaller code</SelectItem>
+                    <SelectItem value="M">Medium (15%) - Balanced</SelectItem>
+                    <SelectItem value="Q">Quartile (25%) - Good</SelectItem>
+                    <SelectItem value="H">High (30%) - Best for logos</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500">Higher levels allow more damage/obscuring</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Quiet Zone (Margin)</Label>
+                <Select value={qrMargin} onValueChange={setQrMargin}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">None</SelectItem>
+                    <SelectItem value="1">Small</SelectItem>
+                    <SelectItem value="2">Standard</SelectItem>
+                    <SelectItem value="4">Large</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500">White space around QR code</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
