@@ -1,0 +1,135 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/auth/auth-context';
+import { Database } from '@/lib/supabase/types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { QRCodeDisplay } from '@/components/dashboard/qr-code-display';
+import { AnalyticsOverview } from '@/components/dashboard/analytics-overview';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+type QRCode = Database['public']['Tables']['qr_codes']['Row'];
+
+export default function QRDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
+  const [qrCode, setQrCode] = useState<QRCode | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user && params.id) {
+      fetchQRCode();
+    }
+  }, [user, params.id]);
+
+  const fetchQRCode = async () => {
+    const { data, error } = await supabase
+      .from('qr_codes')
+      .select('*')
+      .eq('id', params.id as string)
+      .eq('user_id', user!.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setQrCode(data);
+    } else {
+      router.push('/dashboard');
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!qrCode) {
+    return null;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-slate-900">{qrCode.name}</h1>
+              <Badge variant={qrCode.status === 'active' ? 'default' : 'secondary'}>
+                {qrCode.status}
+              </Badge>
+            </div>
+            <p className="text-slate-600 mt-1">View analytics and manage your QR code</p>
+          </div>
+        </div>
+        {qrCode.landing_page_enabled && (
+          <Link href={`/qr/${qrCode.short_code}`} target="_blank">
+            <Button variant="outline">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View Landing Page
+            </Button>
+          </Link>
+        )}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <QRCodeDisplay qrCode={qrCode} />
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div>
+                <span className="text-slate-600">Destination:</span>
+                <p className="font-medium break-all mt-1">{qrCode.destination_url}</p>
+              </div>
+              {qrCode.utm_campaign && (
+                <div>
+                  <span className="text-slate-600">Campaign:</span>
+                  <p className="font-medium mt-1">{qrCode.utm_campaign}</p>
+                </div>
+              )}
+              {qrCode.utm_source && (
+                <div>
+                  <span className="text-slate-600">Source:</span>
+                  <p className="font-medium mt-1">{qrCode.utm_source}</p>
+                </div>
+              )}
+              {qrCode.utm_medium && (
+                <div>
+                  <span className="text-slate-600">Medium:</span>
+                  <p className="font-medium mt-1">{qrCode.utm_medium}</p>
+                </div>
+              )}
+              <div>
+                <span className="text-slate-600">Created:</span>
+                <p className="font-medium mt-1">
+                  {new Date(qrCode.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-2">
+          <AnalyticsOverview qrCodeId={qrCode.id} />
+        </div>
+      </div>
+    </div>
+  );
+}
