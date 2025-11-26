@@ -85,6 +85,9 @@ export function CreateQRForm() {
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const shortCode = nanoid(8);
 
+      console.log('Creating QR code with user_id:', user!.id);
+      console.log('Short code:', shortCode);
+
       const { data, error: insertError } = await supabase
         .from('qr_codes')
         .insert({
@@ -105,10 +108,15 @@ export function CreateQRForm() {
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
 
+      console.log('QR code created successfully:', data);
       router.push(`/dashboard/qr/${data.id}`);
     } catch (err: any) {
+      console.error('Full error:', err);
       setError(err.message || 'Failed to create QR code');
       setLoading(false);
     }

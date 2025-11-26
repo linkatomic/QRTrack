@@ -24,6 +24,9 @@ export default function RedirectPage() {
   useEffect(() => {
     async function handleRedirect() {
       try {
+        console.log('Looking for short code:', params.shortCode);
+        console.log('Supabase URL:', supabaseUrl);
+
         const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
         const { data, error: fetchError } = await supabase
@@ -32,6 +35,9 @@ export default function RedirectPage() {
           .eq('short_code', params.shortCode as string)
           .eq('status', 'active')
           .maybeSingle();
+
+        console.log('Query result - data:', data);
+        console.log('Query result - error:', fetchError);
 
         if (fetchError || !data) {
           console.error('QR code not found:', fetchError);
