@@ -7,11 +7,23 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { Database } from '@/lib/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { QRCodeDisplay } from '@/components/dashboard/qr-code-display';
 import { AnalyticsOverview } from '@/components/dashboard/analytics-overview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 type QRCode = Database['public']['Tables']['qr_codes']['Row'];
 
@@ -19,8 +31,10 @@ export default function QRDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [qrCode, setQrCode] = useState<QRCode | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user && params.id) {
@@ -42,6 +56,33 @@ export default function QRDetailPage() {
       router.push('/dashboard');
     }
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('qr_codes')
+        .delete()
+        .eq('id', params.id as string)
+        .eq('user_id', user!.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'QR Code deleted',
+        description: 'Your QR code has been successfully deleted.',
+      });
+
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete QR code',
+        variant: 'destructive',
+      });
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -75,14 +116,39 @@ export default function QRDetailPage() {
             <p className="text-slate-600 mt-1">View analytics and manage your QR code</p>
           </div>
         </div>
-        {qrCode.landing_page_enabled && (
-          <Link href={`/qr/${qrCode.short_code}`} target="_blank">
-            <Button variant="outline">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              View Landing Page
-            </Button>
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {qrCode.landing_page_enabled && (
+            <Link href={`/qr/${qrCode.short_code}`} target="_blank">
+              <Button variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View Landing Page
+              </Button>
+            </Link>
+          )}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={deleting}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete QR Code</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this QR code? This action cannot be undone.
+                  All scan data will be permanently deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
