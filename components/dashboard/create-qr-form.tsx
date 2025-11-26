@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { createClient } from '@supabase/supabase-js';
@@ -14,7 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Palette, Eye, Layers, Image as ImageIcon, Settings2 } from 'lucide-react';
+import { Loader2, Palette, Eye, Layers, Image as ImageIcon, Settings2, QrCode } from 'lucide-react';
+import { generateQRCode } from '@/lib/qr/generator';
 import { validateURL, buildURLWithUTM } from '@/lib/utils/url-builder';
 import { nanoid } from 'nanoid';
 
@@ -27,6 +28,8 @@ export function CreateQRForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
+  const [qrPreview, setQrPreview] = useState<string>('');
+  const [generatingPreview, setGeneratingPreview] = useState(false);
 
   const [name, setName] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
@@ -65,6 +68,37 @@ export function CreateQRForm() {
       setPreviewUrl('');
     }
   };
+
+  const updateQRPreview = async () => {
+    if (!destinationUrl || !validateURL(destinationUrl)) {
+      setQrPreview('');
+      return;
+    }
+
+    setGeneratingPreview(true);
+    try {
+      const preview = await generateQRCode({
+        url: destinationUrl,
+        color: qrColor,
+        bgColor: qrBgColor,
+        size: parseInt(qrSize),
+        margin: parseInt(qrMargin),
+        errorCorrectionLevel: qrErrorCorrection as 'L' | 'M' | 'Q' | 'H',
+      });
+      setQrPreview(preview);
+    } catch (err) {
+      console.error('Failed to generate preview:', err);
+    } finally {
+      setGeneratingPreview(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateQRPreview();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [destinationUrl, qrColor, qrBgColor, qrStyle, qrEyeStyle, qrGradientType, qrGradientColor, qrSize, qrMargin, qrErrorCorrection]);
 
   const handleDestinationChange = (value: string) => {
     setDestinationUrl(value);
@@ -143,7 +177,9 @@ export function CreateQRForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2">
+        <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
@@ -481,20 +517,93 @@ export function CreateQRForm() {
         </CardContent>
       </Card>
 
-      <div className="flex gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={loading}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create QR Code
-        </Button>
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading || !destinationUrl}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create QR Code
+            </Button>
+          </div>
+        </form>
       </div>
-    </form>
+
+      <div className="lg:col-span-1">
+        <div className="sticky top-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Live Preview
+              </CardTitle>
+              <CardDescription>See your QR code in real-time</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-center items-center min-h-[300px] bg-slate-50 rounded-lg p-4">
+                {generatingPreview ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <p className="text-sm text-slate-600">Generating preview...</p>
+                  </div>
+                ) : qrPreview ? (
+                  <div className="space-y-3">
+                    <img
+                      src={qrPreview}
+                      alt="QR Code Preview"
+                      className="w-64 h-64 rounded-lg shadow-md"
+                      style={{ backgroundColor: qrBgColor }}
+                    />
+                    <div className="text-center">
+                      <p className="text-xs text-slate-500">Size: {qrSize}x{qrSize}</p>
+                      <p className="text-xs text-slate-500">Error Correction: {qrErrorCorrection}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3 text-center p-8">
+                    <QrCode className="h-16 w-16 text-slate-300" />
+                    <p className="text-sm text-slate-600">Enter a destination URL to see preview</p>
+                  </div>
+                )}
+              </div>
+
+              {qrPreview && (
+                <div className="space-y-2">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs font-medium text-blue-900 mb-1">Preview Stats:</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
+                      <div>
+                        <span className="text-blue-600">Style:</span> {qrStyle}
+                      </div>
+                      <div>
+                        <span className="text-blue-600">Eyes:</span> {qrEyeStyle}
+                      </div>
+                      <div>
+                        <span className="text-blue-600">Colors:</span> FG/BG
+                      </div>
+                      <div>
+                        <span className="text-blue-600">Gradient:</span> {qrGradientType}
+                      </div>
+                    </div>
+                  </div>
+
+                  {destinationUrl && (
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs font-medium text-slate-700 mb-1">Target URL:</p>
+                      <p className="text-xs text-slate-600 break-all">{destinationUrl}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }
