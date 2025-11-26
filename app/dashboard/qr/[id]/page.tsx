@@ -112,8 +112,17 @@ export default function QRDetailPage() {
               <Badge variant={qrCode.status === 'active' ? 'default' : 'secondary'}>
                 {qrCode.status}
               </Badge>
+              {qrCode.enable_tracking === false && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                  Direct Link
+                </Badge>
+              )}
             </div>
-            <p className="text-slate-600 mt-1">View analytics and manage your QR code</p>
+            <p className="text-slate-600 mt-1">
+              {qrCode.enable_tracking
+                ? 'View analytics and manage your QR code'
+                : 'Direct link QR code (no tracking)'}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -151,7 +160,7 @@ export default function QRDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className={`grid gap-6 ${qrCode.enable_tracking ? 'lg:grid-cols-3' : 'lg:grid-cols-1 max-w-2xl'}`}>
         <div className="lg:col-span-1">
           <QRCodeDisplay qrCode={qrCode} />
 
@@ -163,6 +172,16 @@ export default function QRDetailPage() {
               <div>
                 <span className="text-slate-600">Destination:</span>
                 <p className="font-medium break-all mt-1">{qrCode.destination_url}</p>
+              </div>
+              <div>
+                <span className="text-slate-600">Tracking:</span>
+                <p className="font-medium mt-1">
+                  {qrCode.enable_tracking ? (
+                    <span className="text-blue-600">Enabled - Full Analytics</span>
+                  ) : (
+                    <span className="text-green-600">Disabled - Direct Link</span>
+                  )}
+                </p>
               </div>
               {qrCode.utm_campaign && (
                 <div>
@@ -192,9 +211,11 @@ export default function QRDetailPage() {
           </Card>
         </div>
 
-        <div className="lg:col-span-2">
-          <AnalyticsOverview qrCodeId={qrCode.id} />
-        </div>
+        {qrCode.enable_tracking && (
+          <div className="lg:col-span-2">
+            <AnalyticsOverview qrCodeId={qrCode.id} />
+          </div>
+        )}
       </div>
     </div>
   );

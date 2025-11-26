@@ -511,19 +511,32 @@ export function NewCreateQRForm() {
                   </CardHeader>
                   <CardContent className="pt-6">
                     {destinationUrl && validateURL(destinationUrl) ? (
-                      <AdvancedQRGenerator
-                        url={destinationUrl}
-                        color={qrColor}
-                        bgColor={qrBgColor}
-                        size={parseInt(qrSize)}
-                        margin={parseInt(qrMargin)}
-                        errorLevel={qrErrorCorrection}
-                        logoUrl={qrLogoUrl}
-                        frameStyle={qrFrameStyle}
-                        frameColor={qrFrameColor}
-                        frameText={qrFrameText}
-                        transparent={transparentBg}
-                      />
+                      <>
+                        <AdvancedQRGenerator
+                          url={destinationUrl}
+                          color={qrColor}
+                          bgColor={qrBgColor}
+                          size={parseInt(qrSize)}
+                          margin={parseInt(qrMargin)}
+                          errorLevel={qrErrorCorrection}
+                          logoUrl={qrLogoUrl}
+                          frameStyle={qrFrameStyle}
+                          frameColor={qrFrameColor}
+                          frameText={qrFrameText}
+                          transparent={transparentBg}
+                        />
+                        {!enableTracking && (
+                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-start gap-2 text-xs text-green-700">
+                              <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-semibold">Direct Link Mode</span>
+                                <p className="mt-1">QR code will link directly to your URL without tracking</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
                         <Settings2 className="h-16 w-16 text-slate-300 mb-4" />

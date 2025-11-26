@@ -29,6 +29,10 @@ export function QRCodeDisplay({ qrCode }: QRCodeDisplayProps) {
 
   const redirectUrl = `${window.location.origin}/r/${qrCode.short_code}`;
 
+  const qrCodeUrl = qrCode.enable_tracking
+    ? redirectUrl
+    : qrCode.destination_url;
+
   useEffect(() => {
     generateQR();
   }, [qrCode]);
@@ -36,7 +40,7 @@ export function QRCodeDisplay({ qrCode }: QRCodeDisplayProps) {
   const generateQR = async () => {
     try {
       const dataUrl = await generateQRCode({
-        url: redirectUrl,
+        url: qrCodeUrl,
         color: qrCode.qr_color,
         bgColor: qrCode.qr_bg_color || '#FFFFFF',
         size: qrCode.qr_size || 512,
@@ -64,7 +68,7 @@ export function QRCodeDisplay({ qrCode }: QRCodeDisplayProps) {
   };
 
   const handleCopyUrl = async () => {
-    await navigator.clipboard.writeText(redirectUrl);
+    await navigator.clipboard.writeText(qrCodeUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -85,9 +89,23 @@ export function QRCodeDisplay({ qrCode }: QRCodeDisplayProps) {
         </div>
 
         <div className="space-y-3">
-          <div className="p-4 bg-slate-50 rounded-lg">
-            <p className="text-xs font-medium text-slate-700 mb-1">Tracking URL:</p>
-            <p className="text-sm text-slate-600 break-all">{redirectUrl}</p>
+          <div className={`p-4 rounded-lg ${qrCode.enable_tracking ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'}`}>
+            <p className="text-xs font-medium mb-1 flex items-center gap-2">
+              {qrCode.enable_tracking ? (
+                <>
+                  <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
+                  <span className="text-blue-900">Tracking URL (Analytics Enabled)</span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+                  <span className="text-green-900">Direct Link (No Tracking)</span>
+                </>
+              )}
+            </p>
+            <p className={`text-sm break-all ${qrCode.enable_tracking ? 'text-blue-700' : 'text-green-700'}`}>
+              {qrCodeUrl}
+            </p>
             <Button
               variant="ghost"
               size="sm"
