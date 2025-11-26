@@ -60,6 +60,13 @@ export interface Database {
           qr_size: number | null
           qr_error_correction: string | null
           qr_margin: number | null
+          enable_tracking: boolean | null
+          qr_template: string | null
+          qr_frame_style: string | null
+          qr_frame_color: string | null
+          qr_frame_text: string | null
+          transparent_bg: boolean | null
+          download_format: string | null
           landing_page_enabled: boolean
           landing_page_title: string | null
           landing_page_description: string | null
@@ -92,6 +99,13 @@ export interface Database {
           qr_size?: number | null
           qr_error_correction?: string | null
           qr_margin?: number | null
+          enable_tracking?: boolean | null
+          qr_template?: string | null
+          qr_frame_style?: string | null
+          qr_frame_color?: string | null
+          qr_frame_text?: string | null
+          transparent_bg?: boolean | null
+          download_format?: string | null
           landing_page_enabled?: boolean
           landing_page_title?: string | null
           landing_page_description?: string | null
@@ -124,6 +138,13 @@ export interface Database {
           qr_size?: number | null
           qr_error_correction?: string | null
           qr_margin?: number | null
+          enable_tracking?: boolean | null
+          qr_template?: string | null
+          qr_frame_style?: string | null
+          qr_frame_color?: string | null
+          qr_frame_text?: string | null
+          transparent_bg?: boolean | null
+          download_format?: string | null
           landing_page_enabled?: boolean
           landing_page_title?: string | null
           landing_page_description?: string | null
